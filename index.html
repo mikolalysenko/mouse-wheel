@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<body></body>
+<script language=javascript>
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict'
+
+var totalX = (window.innerWidth/2)|0, totalY = (window.innerHeight/2)|0
+
+var box = document.createElement('div')
+box.style.position = 'absolute'
+box.style.width = '20px'
+box.style.height = '20px'
+box.style.left = totalX + 'px'
+box.style.top = totalY + 'px'
+box.style['background-color'] = '#f00'
+box.style['z-index'] = 10
+document.body.appendChild(box)
+
+var infoLog = document.createElement('div')
+infoLog.innerHTML = 'Scroll to move box'
+document.body.appendChild(infoLog)
+
+require('../wheel')(function(dx, dy) {
+  totalX -= dx
+  totalY -= dy
+  box.style.left = totalX + 'px'
+  box.style.top = totalY + 'px'
+  infoLog.innerHTML = 
+    '<p>Scroll:' + dx + ',' + dy + ' - ' + 
+    totalX + ',' + totalY + '</p>'
+}, true)
+},{"../wheel":6}],2:[function(require,module,exports){
+(function (global){
+module.exports =
+  global.performance &&
+  global.performance.now ? function now() {
+    return performance.now()
+  } : Date.now || function now() {
+    return +new Date
+  }
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],3:[function(require,module,exports){
+"use strict"
+
+module.exports = function signum(x) {
+  if(x < 0) { return -1 }
+  if(x > 0) { return 1 }
+  return 0.0
+}
+},{}],4:[function(require,module,exports){
+module.exports = function parseUnit(str, out) {
+    if (!out)
+        out = [ 0, '' ]
+
+    str = String(str)
+    var num = parseFloat(str, 10)
+    out[0] = num
+    out[1] = str.match(/[\d.\-\+]*\s*(.*)/)[1] || ''
+    return out
+}
+},{}],5:[function(require,module,exports){
+'use strict'
+
+var parseUnit = require('parse-unit')
+
+module.exports = toPX
+
+var PIXELS_PER_INCH = 96
+
+function getPropertyInPX(element, prop) {
+  var parts = parseUnit(getComputedStyle(element).getPropertyValue(prop))
+  return parts[0] * toPX(parts[1], element)
+}
+
+//This brutal hack is needed
+function getSizeBrutal(unit, element) {
+  var testDIV = document.createElement('div')
+  testDIV.style['font-size'] = '128' + unit
+  element.appendChild(testDIV)
+  var size = getPropertyInPX(testDIV, 'font-size') / 128
+  element.removeChild(testDIV)
+  return size
+}
+
+function toPX(str, element) {
+  element = element || document.body
+  str = (str || 'px').trim().toLowerCase()
+  if(element === window || element === document) {
+    element = document.body 
+  }
+  switch(str) {
+    case '%':  //Ambiguous, not sure if we should use width or height
+      return element.clientHeight / 100.0
+    case 'ch':
+    case 'ex':
+      return getSizeBrutal(str, element)
+    case 'em':
+      return getPropertyInPX(element, 'font-size')
+    case 'rem':
+      return getPropertyInPX(document.body, 'font-size')
+    case 'vw':
+      return window.innerWidth/100
+    case 'vh':
+      return window.innerHeight/100
+    case 'vmin':
+      return Math.min(window.innerWidth, window.innerHeight) / 100
+    case 'vmax':
+      return Math.max(window.innerWidth, window.innerHeight) / 100
+    case 'in':
+      return PIXELS_PER_INCH
+    case 'cm':
+      return PIXELS_PER_INCH / 2.54
+    case 'mm':
+      return PIXELS_PER_INCH / 25.4
+    case 'pt':
+      return PIXELS_PER_INCH / 72
+    case 'pc':
+      return PIXELS_PER_INCH / 6
+  }
+  return 1
+}
+},{"parse-unit":4}],6:[function(require,module,exports){
+'use strict'
+
+var toPX = require('to-px')
+var now = require('right-now')
+var sgn = require('signum')
+
+var SCROLL_CUTOFF = 100
+
+module.exports = mouseWheelListen
+
+function mouseWheelListen(element, callback, noScroll) {
+  if(typeof element === 'function') {
+    noScroll = !!callback
+    callback = element
+    element = window
+  }
+  var lineHeight = toPX('ex', element)
+  var lastT = now()
+  var lastX = 0
+  var lastY = 0
+  var lastZ = 0
+  element.addEventListener('wheel', function(ev) {
+    if(noScroll) {
+      ev.preventDefault()
+    }
+    var t  = now()
+    var dt = t - lastT
+    var dx = ev.deltaX || 0
+    var dy = ev.deltaY || 0
+    var dz = ev.deltaZ || 0
+    var mode = ev.deltaMode
+    var scale = 1
+    lastT = t
+    switch(mode) {
+      case 1:
+        scale = lineHeight
+      break
+      case 2:
+        scale = window.innerHeight
+      break
+    }
+    dx *= scale
+    dy *= scale
+    dz *= scale
+    if(dt < SCROLL_CUTOFF) {
+      var cx = dx, cy = dy, cz = dz
+      dx = sgn(dx) * Math.max(0, Math.abs(dx) - Math.abs(lastX))
+      dy = sgn(dy) * Math.max(0, Math.abs(dy) - Math.abs(lastY))
+      dz = sgn(dz) * Math.max(0, Math.abs(dz) - Math.abs(lastZ))
+      lastX = cx
+      lastY = cy
+      lastZ = cz
+    } else {
+      lastX = dx
+      lastY = dy
+      lastZ = dz
+    }
+    if(dx || dy || dz) {
+      return callback(dx, dy, dz)
+    }
+  })
+}
+},{"right-now":2,"signum":3,"to-px":5}]},{},[1]);
+</script>
+</html>
