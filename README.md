@@ -1,6 +1,6 @@
 mouse-wheel
 ===========
-Easy top 
+Consistent cross browser mouse wheel events.  [Test it out in your browser here](https://mikolalysenko.github.io/mouse-wheel/).
 
 # Example
 
