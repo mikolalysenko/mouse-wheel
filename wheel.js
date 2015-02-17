@@ -4,9 +4,11 @@ var toPX = require('to-px')
 var now = require('right-now')
 var sgn = require('signum')
 
-var SCROLL_CUTOFF = 100
-
 module.exports = mouseWheelListen
+
+function filter(cur, prev, dt) {
+  return sgn(cur) * Math.sqrt(Math.abs(cur))
+}
 
 function mouseWheelListen(element, callback, noScroll) {
   if(typeof element === 'function') {
@@ -42,19 +44,13 @@ function mouseWheelListen(element, callback, noScroll) {
     dx *= scale
     dy *= scale
     dz *= scale
-    if(dt < SCROLL_CUTOFF) {
-      var cx = dx, cy = dy, cz = dz
-      dx = sgn(dx) * Math.max(0, Math.abs(dx) - Math.abs(lastX))
-      dy = sgn(dy) * Math.max(0, Math.abs(dy) - Math.abs(lastY))
-      dz = sgn(dz) * Math.max(0, Math.abs(dz) - Math.abs(lastZ))
-      lastX = cx
-      lastY = cy
-      lastZ = cz
-    } else {
-      lastX = dx
-      lastY = dy
-      lastZ = dz
-    }
+    var cx = dx, cy = dy, cz = dz
+    dx = filter(dx, lastX, dt)
+    dy = filter(dy, lastY, dt)
+    dz = filter(dz, lastZ, dt)
+    lastX = cx
+    lastY = cy
+    lastZ = cz
     if(dx || dy || dz) {
       return callback(dx, dy, dz)
     }
