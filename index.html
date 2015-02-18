@@ -30,26 +30,7 @@ require('../wheel')(function(dx, dy) {
     '<p>Scroll:' + dx + ',' + dy + ' - ' + 
     totalX + ',' + totalY + '</p>'
 }, true)
-},{"../wheel":6}],2:[function(require,module,exports){
-(function (global){
-module.exports =
-  global.performance &&
-  global.performance.now ? function now() {
-    return performance.now()
-  } : Date.now || function now() {
-    return +new Date
-  }
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],3:[function(require,module,exports){
-"use strict"
-
-module.exports = function signum(x) {
-  if(x < 0) { return -1 }
-  if(x > 0) { return 1 }
-  return 0.0
-}
-},{}],4:[function(require,module,exports){
+},{"../wheel":4}],2:[function(require,module,exports){
 module.exports = function parseUnit(str, out) {
     if (!out)
         out = [ 0, '' ]
@@ -60,7 +41,7 @@ module.exports = function parseUnit(str, out) {
     out[1] = str.match(/[\d.\-\+]*\s*(.*)/)[1] || ''
     return out
 }
-},{}],5:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict'
 
 var parseUnit = require('parse-unit')
@@ -121,18 +102,12 @@ function toPX(str, element) {
   }
   return 1
 }
-},{"parse-unit":4}],6:[function(require,module,exports){
+},{"parse-unit":2}],4:[function(require,module,exports){
 'use strict'
 
 var toPX = require('to-px')
-var now = require('right-now')
-var sgn = require('signum')
 
 module.exports = mouseWheelListen
-
-function filter(cur, prev, dt) {
-  return sgn(cur) * Math.sqrt(Math.abs(cur))
-}
 
 function mouseWheelListen(element, callback, noScroll) {
   if(typeof element === 'function') {
@@ -141,22 +116,15 @@ function mouseWheelListen(element, callback, noScroll) {
     element = window
   }
   var lineHeight = toPX('ex', element)
-  var lastT = now()
-  var lastX = 0
-  var lastY = 0
-  var lastZ = 0
   element.addEventListener('wheel', function(ev) {
     if(noScroll) {
       ev.preventDefault()
     }
-    var t  = now()
-    var dt = t - lastT
     var dx = ev.deltaX || 0
     var dy = ev.deltaY || 0
     var dz = ev.deltaZ || 0
     var mode = ev.deltaMode
     var scale = 1
-    lastT = t
     switch(mode) {
       case 1:
         scale = lineHeight
@@ -168,18 +136,11 @@ function mouseWheelListen(element, callback, noScroll) {
     dx *= scale
     dy *= scale
     dz *= scale
-    var cx = dx, cy = dy, cz = dz
-    dx = filter(dx, lastX, dt)
-    dy = filter(dy, lastY, dt)
-    dz = filter(dz, lastZ, dt)
-    lastX = cx
-    lastY = cy
-    lastZ = cz
     if(dx || dy || dz) {
       return callback(dx, dy, dz)
     }
   })
 }
-},{"right-now":2,"signum":3,"to-px":5}]},{},[1]);
+},{"to-px":3}]},{},[1]);
 </script>
 </html>
