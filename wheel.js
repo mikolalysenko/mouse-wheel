@@ -1,14 +1,8 @@
 'use strict'
 
 var toPX = require('to-px')
-var now = require('right-now')
-var sgn = require('signum')
 
 module.exports = mouseWheelListen
-
-function filter(cur, prev, dt) {
-  return sgn(cur) * Math.sqrt(Math.abs(cur))
-}
 
 function mouseWheelListen(element, callback, noScroll) {
   if(typeof element === 'function') {
@@ -17,22 +11,15 @@ function mouseWheelListen(element, callback, noScroll) {
     element = window
   }
   var lineHeight = toPX('ex', element)
-  var lastT = now()
-  var lastX = 0
-  var lastY = 0
-  var lastZ = 0
   element.addEventListener('wheel', function(ev) {
     if(noScroll) {
       ev.preventDefault()
     }
-    var t  = now()
-    var dt = t - lastT
     var dx = ev.deltaX || 0
     var dy = ev.deltaY || 0
     var dz = ev.deltaZ || 0
     var mode = ev.deltaMode
     var scale = 1
-    lastT = t
     switch(mode) {
       case 1:
         scale = lineHeight
@@ -44,13 +31,6 @@ function mouseWheelListen(element, callback, noScroll) {
     dx *= scale
     dy *= scale
     dz *= scale
-    var cx = dx, cy = dy, cz = dz
-    dx = filter(dx, lastX, dt)
-    dy = filter(dy, lastY, dt)
-    dz = filter(dz, lastZ, dt)
-    lastX = cx
-    lastY = cy
-    lastZ = cz
     if(dx || dy || dz) {
       return callback(dx, dy, dz)
     }
