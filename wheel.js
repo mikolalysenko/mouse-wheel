@@ -11,7 +11,7 @@ function mouseWheelListen(element, callback, noScroll) {
     element = window
   }
   var lineHeight = toPX('ex', element)
-  element.addEventListener('wheel', function(ev) {
+  var listener = function(ev) {
     if(noScroll) {
       ev.preventDefault()
     }
@@ -34,5 +34,7 @@ function mouseWheelListen(element, callback, noScroll) {
     if(dx || dy || dz) {
       return callback(dx, dy, dz)
     }
-  })
+  }
+  element.addEventListener('wheel', listener)
+  return listener
 }
