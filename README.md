@@ -26,5 +26,7 @@ Hook an event handler for the mouse wheel on `element`.
     + `dx, dy, dz` is the amount of scrolling vertically, horizontally and depth-wise in pixels
 * `noScroll` is an optional flag, which if set disables scrolling the page
 
+Returns listener function `listener` so that it may be detached later with `element.removeEventListener('wheel', listener)`
+
 # License
 (c) 2015 Mikola Lysenko. MIT License
