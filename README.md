@@ -22,8 +22,9 @@ npm i mouse-wheel
 Hook an event handler for the mouse wheel on `element`.
 
 * `element` is an optional DOM element, or if unspecified then is the window object.
-* `callback(dx, dy, dz)` is called whenever the mouse scrolls
+* `callback(dx, dy, dz, ev)` is called whenever the mouse scrolls
     + `dx, dy, dz` is the amount of scrolling vertically, horizontally and depth-wise in pixels
+    + `ev` is the MouseEvent object associated with the event
 * `noScroll` is an optional flag, which if set disables scrolling the page
 
 Returns listener function `listener` so that it may be detached later with `element.removeEventListener('wheel', listener)`
