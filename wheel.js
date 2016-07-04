@@ -32,7 +32,7 @@ function mouseWheelListen(element, callback, noScroll) {
     dy *= scale
     dz *= scale
     if(dx || dy || dz) {
-      return callback(dx, dy, dz)
+      return callback(dx, dy, dz, ev)
     }
   }
   element.addEventListener('wheel', listener)
