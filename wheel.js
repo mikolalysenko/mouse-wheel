@@ -35,6 +35,6 @@ function mouseWheelListen(element, callback, noScroll) {
       return callback(dx, dy, dz, ev)
     }
   }
-  element.addEventListener('wheel', listener)
+  element.addEventListener('wheel', listener, {passive: true)
   return listener
 }
