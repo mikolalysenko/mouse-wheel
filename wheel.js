@@ -1,6 +1,7 @@
 'use strict'
 
 var toPX = require('to-px')
+var hasPassive = require('has-passive-events')
 
 module.exports = mouseWheelListen
 
@@ -35,6 +36,6 @@ function mouseWheelListen(element, callback, noScroll) {
       return callback(dx, dy, dz, ev)
     }
   }
-  element.addEventListener('wheel', listener)
+  element.addEventListener('wheel', listener, hasPassive ? {passive: !noScroll} : false)
   return listener
 }
